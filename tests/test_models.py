@@ -231,7 +231,6 @@ class TestProductModel(unittest.TestCase):
         bad_product_di["available"] = 0
         with self.assertRaises(DataValidationError):
             new_product.deserialize(data=bad_product_di)
-        
         bad_product_di = copy.deepcopy(product_di)
         bad_product_di["price"] = None
         with self.assertRaises(DataValidationError):
