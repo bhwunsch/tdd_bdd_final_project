@@ -27,9 +27,10 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, db, DataValidationError
 from service import app
 from tests.factories import ProductFactory
+import copy
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres"
@@ -189,3 +190,49 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found.count(), count)
         for product in found:
             self.assertEqual(product.category, category)
+
+    def test_find_by_price(self):
+        """It should Find Products by Price"""
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        price = products[0].price
+        count = len([product for product in products if product.price == price])
+        found = Product.find_by_price(price)
+        self.assertEqual(found.count(), count)
+        for product in found:
+            self.assertEqual(product.price, price)
+
+    def test_deserial(self):
+        """Test deserialization"""
+        product = ProductFactory()
+        product.create()
+        product_id = product.id
+        retrieved_product = Product.find(product_id)
+        product_di = retrieved_product.serialize()
+        new_product_di = copy.deepcopy(product_di)
+        new_product = Product()
+        new_product.deserialize(data=new_product_di)
+        self.assertEqual(new_product.name, product.name)
+
+    def test_deserial_fail(self):
+        """Test deserialization errors"""
+        product = ProductFactory()
+        product.create()
+        product_id = product.id
+        retrieved_product = Product.find(product_id)
+        product_di = retrieved_product.serialize()
+        new_product_di = copy.deepcopy(product_di)
+        new_product = Product()
+        new_product.deserialize(data=new_product_di)
+        self.assertEqual(new_product.name, product.name)
+
+        bad_product_di = copy.deepcopy(product_di)
+        bad_product_di["available"] = 0
+        with self.assertRaises(DataValidationError):
+            new_product.deserialize(data=bad_product_di)
+        
+        bad_product_di = copy.deepcopy(product_di)
+        bad_product_di["price"] = None
+        with self.assertRaises(DataValidationError):
+            new_product.deserialize(data=bad_product_di)
