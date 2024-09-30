@@ -146,8 +146,19 @@ def update_products(product_id):
 ######################################################################
 # D E L E T E   A   P R O D U C T
 ######################################################################
+@app.route("/products/<int:product_id>", methods=["DELETE"])
+def delete_products(product_id):
+    """
+    Delete a Product
+    This endpoint will delete a Product based on its id
+    """
+    app.logger.info("Request to delete a product with id [%s]", product_id)
+    check_content_type("application/json")
 
+    product = Product.find(product_id)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND)
+    else:
+        product.delete()
+        return status.HTTP_204_NO_CONTENT
 
-#
-# PLACE YOUR CODE TO DELETE A PRODUCT HERE
-#
