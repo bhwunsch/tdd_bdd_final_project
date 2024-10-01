@@ -62,11 +62,21 @@ def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element(By.ID, element_id))
     element.select_by_visible_text(text)
+    print(f'selected element_id = {element_id}')
+    selected_option = element.first_selected_option
+    print(f"Selected option text: {selected_option.text}")
+    # Add wait logic to ensure the page has updated after dropdown selection
+    WebDriverWait(context.driver, 10).until(
+        EC.text_to_be_present_in_element((By.ID, 'some_element_after_update'), 'Expected Result')
+    )
+
 
 @then('I should see "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element(By.ID, element_id))
+    print(f'element_id = {element_id}')
+    print(f'element.text = {element.first_selected_option.text}')
     assert(element.first_selected_option.text == text)
 
 @then('the "{element_name}" field should be empty')
@@ -74,6 +84,39 @@ def step_impl(context, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = context.driver.find_element(By.ID, element_id)
     assert(element.get_attribute('value') == u'')
+
+#------------------------------------------------------------------
+@when('I press the "{button}" button')
+def step_impl(context, button):
+    button_id = button.lower() + '-btn'
+    context.driver.find_element_by_id(button_id).click()
+
+@then(u'I should see "{output_message}" in the results')
+def step_impl(context, output_message):
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'search_results'), output_message)
+    )
+    assert(found)
+
+@then(u'I should not see "{output_message}" in the results')
+def step_impl(context, output_message):
+    element = context.driver.find_element(By.ID, 'search_results')
+    print(f"Output Message: {output_message}")
+    print(f"Element Text: {element.text}")
+    assert(output_message not in element.text)
+
+@then('I should see the message "{message}"')
+def step_impl(context, message):
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            message
+        )
+    )
+    assert(found)
+
+
 
 ##################################################################
 # These two function simulate copy and paste
