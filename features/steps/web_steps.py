@@ -67,7 +67,7 @@ def step_impl(context, text, element_name):
     print(f"Selected option text: {selected_option.text}")
     # Add wait logic to ensure the page has updated after dropdown selection
     WebDriverWait(context.driver, 10).until(
-        EC.text_to_be_present_in_element((By.ID, 'some_element_after_update'), 'Expected Result')
+        expected_conditions.text_to_be_present_in_element((By.ID, element_id), text)
     )
 
 
