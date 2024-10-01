@@ -34,6 +34,7 @@ from decimal import Decimal
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
+
 logger = logging.getLogger("flask.app")
 
 # Create the SQLAlchemy object to be initialized later in init_db()
@@ -201,7 +202,7 @@ class Product(db.Model):
 
         """
         logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
+        return cls.query.filter(cls.name == name).all()
 
     @classmethod
     def find_by_price(cls, price: Decimal) -> list:
@@ -246,4 +247,4 @@ class Product(db.Model):
 
         """
         logger.info("Processing category query for %s ...", category.name)
-        return cls.query.filter(cls.category == category)
+        return cls.query.filter(cls.category == category).all()
