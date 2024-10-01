@@ -98,9 +98,12 @@ def create_products():
 # L I S T   A L L   P R O D U C T S
 ######################################################################
 
-#
-# PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
-#
+@app.route("/products", methods=["GET"])
+def list_products():
+    """get list of all products"""
+    product_list = Product.all()
+    results = [product.serialize() for product in product_list]
+    return results, status.HTTP_200_OK
 
 ######################################################################
 # READ A PRODUCT
@@ -144,21 +147,18 @@ def update_products(product_id):
     return product.serialize(), status.HTTP_200_OK
 
 ######################################################################
-# D E L E T E   A   P R O D U C T
+# DELETE A PRODUCT
 ######################################################################
 @app.route("/products/<int:product_id>", methods=["DELETE"])
 def delete_products(product_id):
     """
     Delete a Product
-    This endpoint will delete a Product based on its id
+
+    This endpoint will delete a Product based the id specified in the path
     """
-    app.logger.info("Request to delete a product with id [%s]", product_id)
-    check_content_type("application/json")
+    app.logger.info("Request to Delete a product with id [%s]", product_id)
 
     product = Product.find(product_id)
-    if not product:
-        abort(status.HTTP_404_NOT_FOUND)
-    else:
+    if product:
         product.delete()
-        return status.HTTP_204_NO_CONTENT
-
+    return "", status.HTTP_204_NO_CONTENT
